@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <!-- iOS Web App Meta Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Pace Converter">
+  <title>Pace & Speed Converter</title>
+  
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #000000;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 380px;
+      background-color: #1c1c1e;
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: 600;
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 24px;
+      color: #8e8e93;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .card {
+      background-color: #2c2c2e;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    .card label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #0a84ff;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .card input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #ffffff;
+      font-size: 32px;
+      font-weight: 600;
+      font-family: inherit;
+      padding-right: 75px; /* Ensures numbers don't overlap the unit label */
+    }
+
+    /* Hide up/down stepper arrows for number inputs */
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+
+    /* Prevent iOS auto-zoom on inputs */
+    input[type="text"], input[type="number"] {
+      font-size: 32px !important;
+    }
+
+    .unit {
+      position: absolute;
+      right: 16px;
+      bottom: 20px;
+      color: #8e8e93;
+      font-size: 16px;
+      font-weight: 500;
+      pointer-events: none;
+    }
+
+    .divider {
+      text-align: center;
+      font-size: 18px;
+      color: #ff9f0a;
+      margin: -6px 0 10px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Pace Converter</h1>
+
+    <!-- Pace Box -->
+    <div class="card">
+      <label for="paceInput">Pace</label>
+      <input type="text" id="paceInput" placeholder="5:30" inputmode="decimal" value="5:30">
+      <span class="unit">min/km</span>
+    </div>
+
+    <div class="divider">⇄</div>
+
+    <!-- Speed Box -->
+    <div class="card">
+      <label for="speedInput">Speed</label>
+      <input type="number" id="speedInput" placeholder="10.91" step="0.01" inputmode="decimal" value="10.91">
+      <span class="unit">km/h</span>
+    </div>
+  </div>
+
+  <script>
+    const paceInput = document.getElementById('paceInput');
+    const speedInput = document.getElementById('speedInput');
+
+    // Convert Pace (MM:SS or string) -> Speed (km/h)
+    function paceToSpeed(paceStr) {
+      if (!paceStr) return '';
+      
+      let mins = 0;
+      let secs = 0;
+
+      if (paceStr.includes(':')) {
+        const parts = paceStr.split(':');
+        mins = parseFloat(parts[0]) || 0;
+        secs = parseFloat(parts[1]) || 0;
+      } else {
+        mins = parseFloat(paceStr) || 0;
+      }
+
+      const totalMinutes = mins + (secs / 60);
+      if (totalMinutes <= 0) return '';
+
+      const speed = 60 / totalMinutes;
+      return speed.toFixed(2);
+    }
+
+    // Convert Speed (km/h) -> Pace (MM:SS)
+    function speedToPace(speedVal) {
+      const speed = parseFloat(speedVal);
+      if (!speed || speed <= 0) return '';
+
+      const totalMinutes = 60 / speed;
+      const mins = Math.floor(totalMinutes);
+      let secs = Math.round((totalMinutes - mins) * 60);
+
+      let finalMins = mins;
+      if (secs === 60) {
+        finalMins += 1;
+        secs = 0;
+      }
+
+      const formattedSecs = secs < 10 ? '0' + secs : secs;
+      return `${finalMins}:${formattedSecs}`;
+    }
+
+    // Event listeners for auto-conversion
+    paceInput.addEventListener('input', () => {
+      const val = paceInput.value.trim();
+      speedInput.value = paceToSpeed(val);
+    });
+
+    speedInput.addEventListener('input', () => {
+      const val = speedInput.value.trim();
+      paceInput.value = speedToPace(val);
+    });
+  </script>
+</body>
+</html>
